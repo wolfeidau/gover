@@ -21,7 +21,7 @@ var GitCommit string
 const Version = "0.1.0"
 
 `,
-		version: "0.1.0",
+		version: "\"0.1.0\"",
 	},
 }
 
@@ -56,7 +56,7 @@ const Version = "0.2.0"
 
 func TestUpdateVersion(t *testing.T) {
 	for _, tt := range rtests {
-		version, err := ReadVersion(tt.name+".go", []byte(tt.in))
+		version, err := ReadValue(tt.name+".go", []byte(tt.in), "Version")
 		if err != nil {
 			t.Errorf("error on %q: %v", tt.name, err)
 			continue

@@ -1,40 +1,48 @@
 package gover
 
 import (
+	"errors"
 	"go/ast"
 	"go/parser"
 	"go/token"
 	"log"
 )
 
-func ReadVersion(filename string, src []byte) (string, error) {
+func ReadValue(filename string, src []byte, name string) (string, error) {
 
 	fset := token.NewFileSet()
 
-	file, err := parser.ParseFile(fset, "", src, parser.SpuriousErrors)
+	f, err := parser.ParseFile(fset, "", src, parser.SpuriousErrors)
 
 	if err != nil {
 		return "", err
 	}
 
-	for _, d := range file.Decls {
-		switch n := d.(type) {
+	//	ast.Print(fset, f)
+
+	for _, d := range f.Decls {
+		switch d := d.(type) {
 		case *ast.GenDecl:
-			log.Printf("n = %+v", n)
-			for _, s := range n.Specs {
-				log.Printf("s = %+v", s)
-				switch ss := s.(type) {
+			for _, s := range d.Specs {
+				switch s := s.(type) {
 				case *ast.ValueSpec:
-					log.Printf("ss = %+v", ss.Names)
-					for _, v := range ss.Values {
-						log.Printf("v = %+v", v)
+					for _, n := range s.Names {
+						if n.Name == name {
+							for _, v := range s.Values {
+								switch vv := v.(type) {
+								case *ast.BasicLit:
+									log.Printf("Value %v", vv.Value)
+									return vv.Value, nil
+								}
+
+							}
+						}
+
 					}
 				}
-
 			}
-
 		}
-		//		log.Printf("d = %+v", d)
 	}
-	return "0.2.0", nil
+
+	return "", errors.New("value not found")
 }
